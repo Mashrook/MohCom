@@ -73,6 +73,7 @@ serve(async (req) => {
     if (!moyasarSecretKey) throw new Error("MOYASAR_SECRET_KEY is not configured");
 
     const origin = req.headers.get("origin") || Deno.env.get("SITE_URL") || "https://mohcom-production.up.railway.app";
+    const callbackUrl = `${origin.replace(/\/$/, "")}/#/subscription-success?plan=${encodeURIComponent(plan.code)}`;
 
     const source = paymentMethod === "stcpay"
       ? { type: "stcpay", mobile }
@@ -112,7 +113,7 @@ serve(async (req) => {
       amount: plan.price_halala,
       currency: plan.currency,
       description: `اشتراك ${plan.name} - محامي كوم`,
-      callback_url: `${origin}/subscription-success?plan=${plan.code}`,
+      callback_url: callbackUrl,
       source,
       metadata: {
         user_id: user.id,

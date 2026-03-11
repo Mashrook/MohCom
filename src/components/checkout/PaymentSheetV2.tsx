@@ -9,6 +9,7 @@ import { useMoyasarSdk } from "@/hooks/useMoyasarSdk";
 
 interface PlanInfo {
   id: string;
+  code: string;
   name: string;
   price: number;
 }
@@ -83,7 +84,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
     if (!isOpen || !plan || !sdkReady || !cfg?.publishableKey || !window.Moyasar) return;
 
     // IMPORTANT: include price in the init key so a price change forces a full re-init
-    const initKey = `${cfg.publishableKey}:${plan.id}:${plan.price}:${user?.id ?? "anon"}`;
+    const initKey = `${cfg.publishableKey}:${plan.id}:${plan.code}:${plan.price}:${user?.id ?? "anon"}`;
     if (lastInitKey.current === initKey && initialized) return;
 
     const el = document.getElementById(containerId.current);
@@ -93,7 +94,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
     el.innerHTML = "";
 
     const amountInHalala = Math.round(plan.price * 100);
-    const callbackUrl = getHashRouteUrl(`/subscription-success?plan=${encodeURIComponent(plan.id)}`);
+    const callbackUrl = getHashRouteUrl(`/subscription-success?plan=${encodeURIComponent(plan.code)}`);
 
     // NOTE: بعض طرق الدفع (مثل STC Pay / Apple Pay) قد لا تعمل في وضع الاختبار
     const isTestKey = cfg.publishableKey.startsWith("pk_test_");
@@ -120,6 +121,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
         metadata: {
           user_id: user?.id || "",
           plan_id: plan.id,
+          plan_code: plan.code,
           user_email: user?.email || "",
         },
         on_initiating: () => {
@@ -133,7 +135,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
             onClose();
 
             const successUrl = getHashRouteUrl(
-              `/subscription-success?plan=${encodeURIComponent(plan.id)}&payment_id=${encodeURIComponent(
+              `/subscription-success?plan=${encodeURIComponent(plan.code)}&payment_id=${encodeURIComponent(
                 payment.id
               )}&status=paid`
             );
@@ -171,7 +173,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
   const priceWithVat = plan.price;
   const vatAmount = Math.round(plan.price * 0.15 * 100) / 100;
   const priceBeforeVat = Math.round((plan.price - vatAmount) * 100) / 100;
-  const isYearly = plan.id.includes("yearly");
+  const isYearly = plan.code.includes("yearly");
 
   const inPreviewOrIframe =
     typeof window !== "undefined" && (window.top !== window.self || !window.location.hostname.endsWith("mohamie.com"));

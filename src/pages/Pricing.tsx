@@ -116,7 +116,7 @@ const Pricing = () => {
   const location = useLocation();
   const { toast } = useToast();
   const { user, subscription, checkSubscription } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState<{ id: string; name: string; price: number } | null>(null);
+  const [selectedPlan, setSelectedPlan] = useState<{ id: string; code: string; name: string; price: number } | null>(null);
   const [isPaymentSheetOpen, setIsPaymentSheetOpen] = useState(false);
   const [billingCycles, setBillingCycles] = useState<Record<string, BillingCycle>>({
     personal: "monthly",
@@ -183,7 +183,8 @@ const Pricing = () => {
 
     const priceInRiyals = plan.price_halala / 100;
     setSelectedPlan({
-      id: plan.code,
+      id: plan.id,
+      code: plan.code,
       name: `${getCategoryName(category)} (${cycle === "yearly" ? "سنوي" : "شهري"})`,
       price: priceInRiyals,
     });
