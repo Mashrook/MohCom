@@ -248,8 +248,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
 
                 <div
                   id={containerId.current}
-                  className="moyasar-form"
-                  style={{ minHeight: "300px" }}
+                  className="moyasar-form min-h-[300px]"
                 />
               </div>
             )}

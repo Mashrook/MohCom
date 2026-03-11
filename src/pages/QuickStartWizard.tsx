@@ -108,8 +108,10 @@ const QuickStartWizard = () => {
             {presets.map(preset => (
               <Card
                 key={preset.id}
-                className={`cursor-pointer transition-all hover:border-golden/50 ${
-                  selectedPreset === preset.id ? "border-golden ring-2 ring-golden/20" : "glass-card border-golden/20"
+                className={`cursor-pointer transition-all hover:border-golden/50 hover:bg-muted/40 ${
+                  selectedPreset === preset.id
+                    ? "border-golden bg-card ring-2 ring-golden/20"
+                    : "glass-card border-golden/20 bg-card/80"
                 }`}
                 onClick={() => setSelectedPreset(preset.id)}
               >
@@ -140,7 +142,7 @@ const QuickStartWizard = () => {
 
         {/* Step 1: Features */}
         {currentStep === 1 && selectedPreset && (
-          <Card className="glass-card border-golden/20">
+          <Card className="glass-card border-golden/20 bg-card/80">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Sparkles className="w-5 h-5 text-golden" />
@@ -171,7 +173,7 @@ const QuickStartWizard = () => {
 
         {/* Step 2: Security */}
         {currentStep === 2 && (
-          <Card className="glass-card border-golden/20">
+          <Card className="glass-card border-golden/20 bg-card/80">
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Shield className="w-5 h-5 text-golden" />
@@ -201,7 +203,7 @@ const QuickStartWizard = () => {
 
         {/* Step 3: Complete */}
         {currentStep === 3 && (
-          <Card className="glass-card border-golden/20 text-center py-8">
+          <Card className="glass-card border-golden/20 bg-card/80 py-8 text-center">
             <CardContent className="space-y-4">
               <div className="w-16 h-16 rounded-full bg-green-500/10 flex items-center justify-center mx-auto">
                 <CheckCircle className="w-8 h-8 text-green-500" />

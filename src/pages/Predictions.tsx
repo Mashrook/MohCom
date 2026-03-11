@@ -396,20 +396,13 @@ const Predictions = () => {
                       e.currentTarget.focus();
                     }}
                     placeholder="اكتب وصفاً تفصيلياً للقضية شاملاً الوقائع والمطالبات..."
-                    className="min-h-[150px] w-full bg-transparent border border-golden/30 rounded-md px-3 py-2 text-foreground text-base placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring resize-none font-tajawal"
+                    className="min-h-[150px] w-full resize-none rounded-md border border-golden/30 bg-transparent px-3 py-2 text-base text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring font-tajawal [font-size:16px] [touch-action:manipulation] [user-select:text] [-webkit-appearance:none] [-webkit-user-select:text]"
                     rows={5}
                     autoComplete="off"
                     autoCorrect="on"
                     autoCapitalize="sentences"
                     spellCheck={true}
                     inputMode="text"
-                    style={{ 
-                      fontSize: "16px",
-                      WebkitAppearance: "none",
-                      WebkitUserSelect: "text",
-                      userSelect: "text",
-                      touchAction: "manipulation"
-                    }}
                   />
 
                   {/* Uploaded Files Display */}
@@ -418,13 +411,15 @@ const Predictions = () => {
                       {uploadedFiles.map((file, index) => (
                         <div
                           key={index}
-                          className="flex items-center gap-2 bg-navy-800/60 border border-golden/20 rounded-lg px-3 py-1.5 text-xs"
+                          className="flex items-center gap-2 rounded-lg border border-golden/20 bg-card/80 px-3 py-1.5 text-xs shadow-sm"
                         >
                           <FileText className="w-3 h-3 text-golden" />
                           <span className="text-foreground font-tajawal max-w-[150px] truncate">{file.name}</span>
                           <button
                             onClick={() => removeFile(index)}
                             className="text-red-400 hover:text-red-300"
+                            title={`إزالة الملف ${file.name}`}
+                            aria-label={`إزالة الملف ${file.name}`}
                           >
                             <X className="w-3 h-3" />
                           </button>
@@ -443,6 +438,8 @@ const Predictions = () => {
                       multiple
                       className="hidden"
                       disabled={isAnalyzing}
+                      title="رفع مستندات القضية"
+                      aria-label="رفع مستندات القضية"
                     />
                     <Button
                       type="button"
@@ -524,7 +521,7 @@ const Predictions = () => {
                               stroke="currentColor"
                               strokeWidth="12"
                               fill="none"
-                              className="text-navy-700"
+                              className="text-muted"
                             />
                             <circle
                               cx="80"
@@ -607,7 +604,7 @@ const Predictions = () => {
                         {result.similarCases.map((case_, index) => (
                           <div 
                             key={index}
-                            className="flex items-center justify-between p-3 bg-navy-800/50 rounded-lg"
+                            className="flex items-center justify-between rounded-lg border border-border/60 bg-muted/40 p-3"
                           >
                             <div>
                               <p className="text-sm text-foreground font-tajawal">{case_.title}</p>
@@ -632,7 +629,7 @@ const Predictions = () => {
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-4">
-                      <div className="flex items-center gap-3 p-3 bg-navy-800/50 rounded-lg">
+                      <div className="flex items-center gap-3 rounded-lg border border-border/60 bg-muted/40 p-3">
                         <Clock className="w-6 h-6 text-golden" />
                         <div>
                           <p className="text-sm text-muted-foreground font-tajawal">المدة المتوقعة للقضية</p>
