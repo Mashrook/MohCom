@@ -1,0 +1,61 @@
+project_id = "glmpsmwcbxebxioekgzu"
+
+[functions.subscription-reminder]
+verify_jwt = false
+
+[functions.legal-ai]
+verify_jwt = true
+
+[functions.check-subscription]
+verify_jwt = true
+
+[functions.send-reminder-email]
+verify_jwt = true
+
+[functions.lawyer-ai-assistant]
+verify_jwt = true
+
+[functions.parse-document]
+verify_jwt = true
+
+[functions.sitemap]
+verify_jwt = false
+
+[functions.create-tap-checkout]
+verify_jwt = true
+
+[functions.tap-webhook]
+verify_jwt = false
+
+[functions.support-chat]
+verify_jwt = false
+
+[functions.get-tap-config]
+verify_jwt = false
+
+[functions.perplexity-search]
+verify_jwt = true
+
+[functions.data-backup]
+verify_jwt = true
+
+[functions.check-admin-ip]
+verify_jwt = false
+
+[functions.jitsi-token]
+verify_jwt = true
+
+[functions.send-contract-share]
+verify_jwt = true
+
+[functions.get-moyasar-config]
+verify_jwt = false
+
+[functions.create-moyasar-checkout]
+verify_jwt = true
+
+[functions.moyasar-webhook]
+verify_jwt = false
+
+[functions.iap-register]
+verify_jwt = true

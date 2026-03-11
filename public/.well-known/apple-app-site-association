@@ -1,0 +1,38 @@
+{
+  "applinks": {
+    "apps": [],
+    "details": [
+      {
+        "appID": "P2SV4K77QH.com.mohamie.dev.app",
+        "appID_fallback": "P2SV4K77QH.com.mohamie.ios",
+        "paths": [
+          "/consultation",
+          "/consultation/*",
+          "/legal-search",
+          "/legal-search/*",
+          "/contracts",
+          "/predictions",
+          "/lawyers",
+          "/messages",
+          "/account-settings",
+          "/shared-contract/*",
+          "/auth",
+          "/dashboard",
+          "/subscription",
+          "/subscription-success",
+          "/lawyer-dashboard",
+          "/paywall",
+          "/blog/*",
+          "/pricing",
+          "/download"
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": [
+      "P2SV4K77QH.com.mohamie.dev.app",
+      "P2SV4K77QH.com.mohamie.ios"
+    ]
+  }
+}

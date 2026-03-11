@@ -1,0 +1,53 @@
+# محامي كوم - Robots.txt
+# https://mohamie.com
+
+# السماح لجميع محركات البحث
+User-agent: *
+
+# الصفحات المسموح بها
+Allow: /
+Allow: /about
+Allow: /pricing
+Allow: /contact
+Allow: /consultation
+Allow: /predictions
+Allow: /complaints
+Allow: /contracts
+Allow: /lawyers
+Allow: /legal-search
+Allow: /privacy
+Allow: /terms
+Allow: /auth
+
+# منع الوصول للصفحات الخاصة
+Disallow: /admin
+Disallow: /admin/*
+Disallow: /client-dashboard
+Disallow: /lawyer-dashboard
+Disallow: /lawyer-dashboard/*
+Disallow: /messages
+Disallow: /account-settings
+Disallow: /subscription-success
+
+# موقع خريطة الموقع
+Sitemap: https://mohamie.com/sitemap.xml
+
+# قواعد خاصة لـ Google
+User-agent: Googlebot
+Allow: /
+Crawl-delay: 0
+
+# قواعد خاصة لـ Bing
+User-agent: Bingbot
+Allow: /
+Crawl-delay: 1
+
+# السماح لبوتات وسائل التواصل الاجتماعي
+User-agent: Twitterbot
+Allow: /
+
+User-agent: facebookexternalhit
+Allow: /
+
+User-agent: LinkedInBot
+Allow: /

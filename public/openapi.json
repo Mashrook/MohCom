@@ -1,0 +1,547 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "Mohamie Legal Platform API",
+    "description": "واجهة برمجة تطبيقات منصة محامي القانونية\n\n## المصادقة\nمعظم الـ APIs تتطلب مصادقة باستخدام JWT token.\n\nأضف الـ Headers التالية لكل طلب:\n- `apikey`: مفتاح المشروع العام\n- `Authorization`: Bearer token للمستخدم (للـ APIs المحمية)\n\n## معدل الطلبات\n- الحد الأقصى: 100 طلب/دقيقة للمستخدم\n- الذكاء الاصطناعي: 20 طلب/دقيقة",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Mohamie Support",
+      "url": "https://mohamie.com/contact",
+      "email": "support@mohamie.com"
+    },
+    "license": {
+      "name": "Proprietary",
+      "url": "https://mohamie.com/terms"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://glmpsmwcbxebxioekgzu.supabase.co/functions/v1",
+      "description": "Production Server"
+    }
+  ],
+  "tags": [
+    { "name": "AI Services", "description": "خدمات الذكاء الاصطناعي القانوني" },
+    { "name": "Payments", "description": "خدمات الدفع والاشتراكات" },
+    { "name": "Documents", "description": "معالجة المستندات والعقود" },
+    { "name": "Video Calls", "description": "مكالمات الفيديو" },
+    { "name": "Support", "description": "الدعم الفني" },
+    { "name": "Security", "description": "الأمان والتحقق" }
+  ],
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT token من Supabase Auth"
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "apikey",
+        "description": "مفتاح المشروع العام (anon key)"
+      }
+    },
+    "schemas": {
+      "Error": {
+        "type": "object",
+        "properties": {
+          "error": { "type": "string", "description": "رسالة الخطأ" },
+          "code": { "type": "string", "description": "كود الخطأ" }
+        },
+        "required": ["error"]
+      },
+      "Message": {
+        "type": "object",
+        "properties": {
+          "role": { "type": "string", "enum": ["user", "assistant", "system"], "description": "دور المرسل" },
+          "content": { "type": "string", "description": "محتوى الرسالة", "maxLength": 10000 }
+        },
+        "required": ["role", "content"]
+      },
+      "SubscriptionStatus": {
+        "type": "object",
+        "properties": {
+          "hasSubscription": { "type": "boolean" },
+          "isActive": { "type": "boolean" },
+          "planType": { "type": "string", "enum": ["free", "basic", "professional", "enterprise"] },
+          "endDate": { "type": "string", "format": "date-time" }
+        }
+      },
+      "PaymentRequest": {
+        "type": "object",
+        "properties": {
+          "planId": { "type": "string", "enum": ["basic", "professional", "enterprise"], "description": "معرف الخطة" },
+          "paymentMethod": { "type": "string", "enum": ["creditcard", "applepay", "stcpay"], "description": "طريقة الدفع" },
+          "mobile": { "type": "string", "pattern": "^05[0-9]{8}$", "description": "رقم الجوال (مطلوب لـ STC Pay)" }
+        },
+        "required": ["planId", "paymentMethod"]
+      },
+      "PaymentResponse": {
+        "type": "object",
+        "properties": {
+          "success": { "type": "boolean" },
+          "redirectUrl": { "type": "string", "format": "uri" },
+          "paymentId": { "type": "string" }
+        }
+      },
+      "LegalAIRequest": {
+        "type": "object",
+        "properties": {
+          "messages": { "type": "array", "items": { "$ref": "#/components/schemas/Message" }, "maxItems": 50, "description": "سجل المحادثة" },
+          "systemPrompt": { "type": "string", "maxLength": 2000, "description": "تعليمات النظام (اختياري)" }
+        },
+        "required": ["messages"]
+      },
+      "LegalAIResponse": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "string", "description": "رد المساعد القانوني" }
+        }
+      },
+      "SearchRequest": {
+        "type": "object",
+        "properties": {
+          "query": { "type": "string", "minLength": 3, "maxLength": 500, "description": "نص البحث" }
+        },
+        "required": ["query"]
+      },
+      "SearchResponse": {
+        "type": "object",
+        "properties": {
+          "content": { "type": "string", "description": "نتيجة البحث" },
+          "citations": { "type": "array", "items": { "type": "string", "format": "uri" }, "description": "المراجع والمصادر" }
+        }
+      },
+      "JitsiTokenRequest": {
+        "type": "object",
+        "properties": {
+          "roomName": { "type": "string", "maxLength": 100, "description": "اسم الغرفة" },
+          "targetUserId": { "type": "string", "format": "uuid", "description": "معرف المستخدم الآخر" }
+        },
+        "required": ["roomName"]
+      },
+      "JitsiTokenResponse": {
+        "type": "object",
+        "properties": {
+          "token": { "type": "string", "description": "JWT token للاتصال" },
+          "roomName": { "type": "string" },
+          "domain": { "type": "string" }
+        }
+      },
+      "DocumentParseRequest": {
+        "type": "object",
+        "properties": {
+          "fileUrl": { "type": "string", "format": "uri", "description": "رابط الملف" },
+          "fileType": { "type": "string", "enum": ["pdf", "docx", "doc"], "description": "نوع الملف" }
+        },
+        "required": ["fileUrl", "fileType"]
+      },
+      "DocumentParseResponse": {
+        "type": "object",
+        "properties": {
+          "text": { "type": "string", "description": "النص المستخرج" },
+          "pages": { "type": "integer", "description": "عدد الصفحات" }
+        }
+      },
+      "ContractShareRequest": {
+        "type": "object",
+        "properties": {
+          "contractId": { "type": "string", "format": "uuid", "description": "معرف العقد" },
+          "recipientEmail": { "type": "string", "format": "email", "description": "البريد الإلكتروني للمستلم" }
+        },
+        "required": ["contractId", "recipientEmail"]
+      },
+      "MoyasarConfig": {
+        "type": "object",
+        "properties": {
+          "publishableKey": { "type": "string", "description": "المفتاح العام لـ Moyasar" }
+        }
+      },
+      "AdminIPCheck": {
+        "type": "object",
+        "properties": {
+          "allowed": { "type": "boolean" },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "responses": {
+      "UnauthorizedError": {
+        "description": "غير مصرح - JWT غير صالح أو منتهي",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Invalid or expired token", "code": "UNAUTHORIZED" }
+          }
+        }
+      },
+      "RateLimitError": {
+        "description": "تجاوز الحد المسموح من الطلبات",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" },
+            "example": { "error": "Rate limit exceeded", "code": "RATE_LIMIT" }
+          }
+        }
+      },
+      "ServerError": {
+        "description": "خطأ في الخادم",
+        "content": {
+          "application/json": {
+            "schema": { "$ref": "#/components/schemas/Error" }
+          }
+        }
+      }
+    }
+  },
+  "paths": {
+    "/legal-ai": {
+      "post": {
+        "tags": ["AI Services"],
+        "summary": "المساعد القانوني الذكي",
+        "description": "طرح استفسارات قانونية والحصول على إجابات ذكية مبنية على الأنظمة السعودية.\n\n**الحدود:**\n- الحد الأقصى للرسائل: 50 رسالة\n- الحد الأقصى لطول الرسالة: 10,000 حرف",
+        "operationId": "legalAI",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LegalAIRequest" },
+              "example": { "messages": [{ "role": "user", "content": "ما هي حقوق الموظف في حالة الفصل التعسفي؟" }] }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "رد ناجح من المساعد",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/LegalAIResponse" },
+                "example": { "content": "وفقاً لنظام العمل السعودي، في حالة الفصل التعسفي..." }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" },
+          "500": { "$ref": "#/components/responses/ServerError" }
+        }
+      }
+    },
+    "/lawyer-ai-assistant": {
+      "post": {
+        "tags": ["AI Services"],
+        "summary": "مساعد المحامي الذكي",
+        "description": "مساعد ذكي خاص بالمحامين لتحليل القضايا والبحث القانوني",
+        "operationId": "lawyerAIAssistant",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "messages": { "type": "array", "items": { "$ref": "#/components/schemas/Message" } },
+                  "chatId": { "type": "string", "format": "uuid" }
+                },
+                "required": ["messages"]
+              },
+              "example": { "messages": [{ "role": "user", "content": "أريد تحليل قضية عمالية..." }], "chatId": "550e8400-e29b-41d4-a716-446655440000" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "رد ناجح",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/LegalAIResponse" } } }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/perplexity-search": {
+      "post": {
+        "tags": ["AI Services"],
+        "summary": "البحث في الأنظمة واللوائح",
+        "description": "البحث الذكي في الأنظمة واللوائح السعودية باستخدام Perplexity AI",
+        "operationId": "perplexitySearch",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SearchRequest" },
+              "example": { "query": "نظام العمل السعودي - الإجازات" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "نتائج البحث",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SearchResponse" },
+                "example": { "content": "وفقاً لنظام العمل السعودي الصادر بالمرسوم الملكي...", "citations": ["https://laws.boe.gov.sa/BoeLaws/Laws/LawDetails/..."] }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "429": { "$ref": "#/components/responses/RateLimitError" }
+        }
+      }
+    },
+    "/check-subscription": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "التحقق من حالة الاشتراك",
+        "description": "التحقق من حالة اشتراك المستخدم الحالي",
+        "operationId": "checkSubscription",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "حالة الاشتراك",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/SubscriptionStatus" },
+                "example": { "hasSubscription": true, "isActive": true, "planType": "professional", "endDate": "2025-02-15T00:00:00Z" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/create-moyasar-checkout": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "إنشاء جلسة دفع",
+        "description": "إنشاء جلسة دفع جديدة عبر Moyasar\n\n**طرق الدفع المدعومة:**\n- بطاقات الائتمان (Visa, Mastercard, Mada)\n- Apple Pay\n- STC Pay",
+        "operationId": "createMoyasarCheckout",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/PaymentRequest" },
+              "example": { "planId": "professional", "paymentMethod": "creditcard" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "جلسة دفع ناجحة",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/PaymentResponse" },
+                "example": { "success": true, "redirectUrl": "https://api.moyasar.com/v1/payments/...", "paymentId": "pay_xxxxxxxx" }
+              }
+            }
+          },
+          "400": { "description": "بيانات غير صالحة", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/moyasar-webhook": {
+      "post": {
+        "tags": ["Payments"],
+        "summary": "Webhook الدفع",
+        "description": "استقبال إشعارات الدفع من Moyasar\n\n**ملاحظة:** هذا الـ endpoint مخصص لـ Moyasar فقط",
+        "operationId": "moyasarWebhook",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "id": { "type": "string" },
+                  "status": { "type": "string", "enum": ["paid", "failed", "initiated"] },
+                  "amount": { "type": "integer", "description": "المبلغ بالهللات" },
+                  "metadata": { "type": "object" }
+                },
+                "required": ["id", "status", "amount"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "تم استلام الإشعار",
+            "content": { "application/json": { "schema": { "type": "object", "properties": { "received": { "type": "boolean" } } } } }
+          }
+        }
+      }
+    },
+    "/get-moyasar-config": {
+      "get": {
+        "tags": ["Payments"],
+        "summary": "إعدادات Moyasar",
+        "description": "الحصول على المفتاح العام لـ Moyasar للاستخدام في الواجهة",
+        "operationId": "getMoyasarConfig",
+        "responses": {
+          "200": {
+            "description": "إعدادات Moyasar",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/MoyasarConfig" }, "example": { "publishableKey": "pk_live_xxxxxxxx" } } }
+          }
+        }
+      }
+    },
+    "/parse-document": {
+      "post": {
+        "tags": ["Documents"],
+        "summary": "تحليل المستندات",
+        "description": "استخراج النص من ملفات PDF و Word\n\n**الحدود:**\n- الحد الأقصى لحجم الملف: 10 MB\n- الأنواع المدعومة: PDF, DOC, DOCX",
+        "operationId": "parseDocument",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/DocumentParseRequest" },
+              "example": { "fileUrl": "https://storage.example.com/contract.pdf", "fileType": "pdf" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "النص المستخرج",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/DocumentParseResponse" },
+                "example": { "text": "عقد عمل بين الطرف الأول...", "pages": 5 }
+              }
+            }
+          },
+          "400": { "description": "نوع ملف غير مدعوم", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/send-contract-share": {
+      "post": {
+        "tags": ["Documents"],
+        "summary": "مشاركة العقد",
+        "description": "إرسال رابط مشاركة العقد عبر البريد الإلكتروني",
+        "operationId": "sendContractShare",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/ContractShareRequest" },
+              "example": { "contractId": "550e8400-e29b-41d4-a716-446655440000", "recipientEmail": "recipient@example.com" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "تم إرسال الرابط",
+            "content": {
+              "application/json": {
+                "schema": { "type": "object", "properties": { "success": { "type": "boolean" }, "shareUrl": { "type": "string", "format": "uri" } } }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/jitsi-token": {
+      "post": {
+        "tags": ["Video Calls"],
+        "summary": "رمز مكالمات الفيديو",
+        "description": "إنشاء رمز JWT للانضمام لمكالمة فيديو عبر Jitsi",
+        "operationId": "jitsiToken",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/JitsiTokenRequest" },
+              "example": { "roomName": "consultation_12345", "targetUserId": "550e8400-e29b-41d4-a716-446655440000" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "رمز الاتصال",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/JitsiTokenResponse" },
+                "example": { "token": "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9...", "roomName": "consultation_12345", "domain": "meet.jit.si" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" }
+        }
+      }
+    },
+    "/support-chat": {
+      "post": {
+        "tags": ["Support"],
+        "summary": "الدعم الفني الآلي",
+        "description": "محادثة الدعم الفني باستخدام الذكاء الاصطناعي",
+        "operationId": "supportChat",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": { "messages": { "type": "array", "items": { "$ref": "#/components/schemas/Message" } } },
+                "required": ["messages"]
+              },
+              "example": { "messages": [{ "role": "user", "content": "كيف يمكنني الاشتراك؟" }] }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "رد الدعم الفني (SSE Stream)", "content": { "text/event-stream": { "schema": { "type": "string" } } } }
+        }
+      }
+    },
+    "/check-admin-ip": {
+      "post": {
+        "tags": ["Security"],
+        "summary": "التحقق من IP المسؤول",
+        "description": "التحقق من صلاحية عنوان IP للوصول لوحة التحكم",
+        "operationId": "checkAdminIP",
+        "responses": {
+          "200": {
+            "description": "نتيجة التحقق",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/AdminIPCheck" }, "example": { "allowed": true, "reason": "IP in whitelist" } } }
+          }
+        }
+      }
+    },
+    "/data-backup": {
+      "post": {
+        "tags": ["Security"],
+        "summary": "النسخ الاحتياطي",
+        "description": "إنشاء نسخة احتياطية للبيانات\n\n**ملاحظة:** متاح للمسؤولين فقط",
+        "operationId": "dataBackup",
+        "security": [{ "BearerAuth": [], "ApiKeyAuth": [] }],
+        "responses": {
+          "200": {
+            "description": "نسخة احتياطية ناجحة",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": { "success": { "type": "boolean" }, "backupId": { "type": "string" }, "downloadUrl": { "type": "string", "format": "uri" } }
+                },
+                "example": { "success": true, "backupId": "backup_20250115_123456", "downloadUrl": "https://storage.example.com/backups/..." }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/UnauthorizedError" },
+          "403": { "description": "غير مسموح - ليس مسؤول", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Error" } } } }
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,545 @@
+/* Fonts loaded via preload in index.html for better performance */
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Light Theme */
+    --background: 42 33% 97%;
+    --foreground: 222 35% 18%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 222 35% 18%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 35% 18%;
+
+    /* Golden Primary */
+    --primary: 43 66% 52%;
+    --primary-foreground: 222 47% 10%;
+
+    --secondary: 220 24% 92%;
+    --secondary-foreground: 222 35% 18%;
+
+    --muted: 220 20% 92%;
+    --muted-foreground: 220 12% 42%;
+
+    /* Golden Accent */
+    --accent: 43 80% 58%;
+    --accent-foreground: 222 47% 10%;
+
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+
+    --border: 220 18% 84%;
+    --input: 220 18% 90%;
+    --ring: 43 66% 52%;
+
+    --radius: 0.75rem;
+
+    /* Custom Colors */
+    --golden: 43 66% 52%;
+    --golden-light: 48 90% 60%;
+    --golden-dark: 43 60% 42%;
+    --navy-primary: 42 33% 97%;
+    --navy-secondary: 220 24% 94%;
+    --navy-tertiary: 220 20% 88%;
+
+    /* Gradients */
+    --gradient-golden: linear-gradient(135deg, hsl(43 66% 52%), hsl(48 90% 60%));
+    --gradient-dark: linear-gradient(180deg, hsl(42 33% 97%), hsl(220 24% 93%));
+
+    /* Shadows */
+    --shadow-golden: 0 0 30px hsl(43 66% 52% / 0.2);
+    --shadow-card: 0 8px 32px hsl(220 25% 20% / 0.08);
+
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 222 35% 18%;
+    --sidebar-primary: 43 66% 52%;
+    --sidebar-primary-foreground: 222 47% 10%;
+    --sidebar-accent: 220 24% 94%;
+    --sidebar-accent-foreground: 222 35% 18%;
+    --sidebar-border: 220 18% 84%;
+    --sidebar-ring: 43 66% 52%;
+  }
+
+  .dark {
+    --background: 222 47% 10%;
+    --foreground: 0 0% 100%;
+    --card: 222 40% 12%;
+    --card-foreground: 0 0% 100%;
+    --popover: 222 40% 12%;
+    --popover-foreground: 0 0% 100%;
+    --primary: 43 66% 52%;
+    --primary-foreground: 222 47% 10%;
+    --secondary: 222 35% 16%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 222 25% 20%;
+    --muted-foreground: 215 20% 70%;
+    --accent: 43 80% 58%;
+    --accent-foreground: 222 47% 10%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    --border: 222 30% 22%;
+    --input: 222 30% 18%;
+    --ring: 43 66% 52%;
+
+    --golden: 43 66% 52%;
+    --golden-light: 48 90% 60%;
+    --golden-dark: 43 60% 42%;
+    --navy-primary: 222 47% 10%;
+    --navy-secondary: 222 35% 12%;
+    --navy-tertiary: 222 28% 18%;
+    --gradient-golden: linear-gradient(135deg, hsl(43 66% 52%), hsl(48 90% 60%));
+    --gradient-dark: linear-gradient(180deg, hsl(222 47% 10%), hsl(222 35% 8%));
+    --shadow-golden: 0 0 30px hsl(43 66% 52% / 0.2);
+    --shadow-card: 0 8px 32px hsl(0 0% 0% / 0.3);
+
+    --sidebar-background: 222 47% 10%;
+    --sidebar-foreground: 0 0% 100%;
+    --sidebar-primary: 43 66% 52%;
+    --sidebar-primary-foreground: 222 47% 10%;
+    --sidebar-accent: 222 28% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 222 30% 22%;
+    --sidebar-ring: 43 66% 52%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    direction: rtl;
+    height: 100%;
+    overflow-x: clip;
+    overscroll-behavior: none;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  body {
+    @apply bg-background text-foreground font-tajawal antialiased;
+    min-height: 100%;
+    overflow-x: clip;
+    overscroll-behavior-y: none;
+    position: relative;
+    transition: background-color 0.25s ease, color 0.25s ease;
+  }
+
+  /* Ensure form controls use Arabic fonts across browsers (mobile Safari especially) */
+  input,
+  textarea,
+  select,
+  button {
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    color: inherit;
+  }
+
+  /* Fix placeholder text visibility */
+  input::placeholder,
+  textarea::placeholder {
+    font-family: 'Tajawal', 'Cairo', sans-serif;
+    color: hsl(var(--muted-foreground));
+    opacity: 1;
+  }
+
+  /* Ensure text renders correctly in RTL */
+  input[type="text"],
+  input[type="email"],
+  input[type="password"],
+  input[type="search"],
+  textarea {
+    text-align: right;
+    direction: rtl;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-cairo;
+  }
+}
+
+@layer utilities {
+  .text-gradient-golden {
+    @apply bg-gradient-to-l from-golden via-golden-light to-golden bg-clip-text text-transparent;
+  }
+
+  .bg-gradient-golden {
+    background: linear-gradient(135deg, hsl(43 66% 52%), hsl(48 90% 60%));
+  }
+
+  .bg-gradient-dark {
+    background: var(--gradient-dark);
+  }
+
+  .shadow-golden {
+    box-shadow: 0 0 30px hsl(43 66% 52% / 0.3);
+  }
+
+  .shadow-golden-lg {
+    box-shadow: 0 0 60px hsl(43 66% 52% / 0.4);
+  }
+
+  .border-golden {
+    border-color: hsl(43 66% 52%);
+  }
+
+  .glow-golden {
+    filter: drop-shadow(0 0 20px hsl(43 66% 52% / 0.5));
+  }
+
+  .animate-float {
+    animation: float 6s ease-in-out infinite;
+  }
+
+  .animate-pulse-golden {
+    animation: pulse-golden 2s ease-in-out infinite;
+  }
+
+  .animate-slide-up {
+    animation: slide-up 0.6s ease-out forwards;
+  }
+
+  .animate-fade-in {
+    animation: fade-in 0.8s ease-out forwards;
+  }
+
+  .glass-card {
+    @apply bg-card/80 backdrop-blur-xl border border-border/50;
+  }
+
+  .hover-lift {
+    @apply transition-all duration-300 hover:-translate-y-1 hover:shadow-golden;
+  }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-20px); }
+}
+
+@keyframes pulse-golden {
+  0%, 100% { box-shadow: 0 0 20px hsl(43 66% 52% / 0.3); }
+  50% { box-shadow: 0 0 40px hsl(43 66% 52% / 0.6); }
+}
+
+@keyframes slide-up {
+  from { opacity: 0; transform: translateY(30px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scale-in {
+  0% { 
+    opacity: 0; 
+    transform: scale(0.5); 
+  }
+  100% { 
+    opacity: 1; 
+    transform: scale(1); 
+  }
+}
+
+.animate-scale-in {
+  animation: scale-in 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+.bg-gradient-radial {
+  background: radial-gradient(circle, var(--tw-gradient-stops));
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: hsl(var(--background));
+}
+
+::-webkit-scrollbar-thumb {
+  background: hsl(var(--primary) / 0.5);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--primary));
+}
+
+/* Moyasar Payment Form Styling */
+.moyasar-form {
+  direction: ltr;
+  text-align: left;
+  width: 100%;
+}
+
+.moyasar-form .mysr-form {
+  font-family: 'Tajawal', 'Cairo', sans-serif !important;
+  width: 100% !important;
+}
+
+/* Hide Moyasar test mode warning */
+.moyasar-form .mysr-form__warning,
+.moyasar-form .mysr-warning,
+.moyasar-form [class*="warning"],
+.moyasar-form [class*="test-mode"] {
+  display: none !important;
+}
+
+/* Style the payment method tabs (Moyasar MPF) */
+.moyasar-form .mysr-form-tabs,
+.moyasar-form .mysr-tabs {
+  display: flex !important;
+  gap: 8px !important;
+  margin-bottom: 16px !important;
+  flex-wrap: wrap !important;
+  justify-content: center !important;
+}
+
+.moyasar-form .mysr-form-tabs__tab,
+.moyasar-form .mysr-tab {
+  flex: 1 !important;
+  min-width: 80px !important;
+  max-width: 110px !important;
+  padding: 12px 8px !important;
+  border-radius: 10px !important;
+  background: hsl(222 30% 16%) !important;
+  border: 1px solid hsl(222 30% 25%) !important;
+  color: hsl(0 0% 100%) !important;
+  font-size: 12px !important;
+  font-weight: 500 !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+
+.moyasar-form .mysr-form-tabs__tab:hover,
+.moyasar-form .mysr-tab:hover {
+  background: hsl(222 30% 20%) !important;
+  border-color: hsl(var(--primary)) !important;
+}
+
+.moyasar-form .mysr-form-tabs__tab--active,
+.moyasar-form .mysr-form-tabs__tab.active,
+.moyasar-form .mysr-tab--active,
+.moyasar-form .mysr-tab.active {
+  background: linear-gradient(135deg, hsl(var(--primary)), hsl(var(--accent))) !important;
+  border-color: hsl(var(--primary)) !important;
+  color: hsl(var(--primary-foreground)) !important;
+  box-shadow: 0 4px 12px hsl(var(--primary) / 0.3) !important;
+}
+
+/* Tab icons */
+.moyasar-form .mysr-form-tabs__tab svg,
+.moyasar-form .mysr-tab svg,
+.moyasar-form .mysr-form-tabs__tab img,
+.moyasar-form .mysr-tab img {
+  width: 28px !important;
+  height: 20px !important;
+  object-fit: contain !important;
+}
+
+/* Credit Card Form Container */
+.moyasar-form .mysr-creditcard-form,
+.moyasar-form .mysr-form__creditcard,
+.moyasar-form [data-method="creditcard"],
+.moyasar-form .mysr-form-panel,
+.moyasar-form [class*="creditcard"],
+.moyasar-form [class*="card-form"] {
+  padding: 16px !important;
+  background: hsl(222 30% 12%) !important;
+  border-radius: 12px !important;
+  border: 1px solid hsl(222 30% 20%) !important;
+  margin-top: 8px !important;
+}
+
+/* Style all form inputs */
+.moyasar-form input,
+.moyasar-form .mysr-input,
+.moyasar-form input[type="text"],
+.moyasar-form input[type="tel"],
+.moyasar-form input[type="number"] {
+  background: hsl(222 30% 16%) !important;
+  border: 1px solid hsl(222 30% 25%) !important;
+  border-radius: 8px !important;
+  color: hsl(0 0% 100%) !important;
+  padding: 14px 12px !important;
+  font-size: 16px !important;
+  width: 100% !important;
+  direction: ltr !important;
+  text-align: left !important;
+  transition: all 0.2s ease !important;
+  font-family: 'SF Mono', 'Roboto Mono', monospace !important;
+  letter-spacing: 0.5px !important;
+  box-sizing: border-box !important;
+}
+
+.moyasar-form input:focus {
+  border-color: hsl(43 66% 52%) !important;
+  outline: none !important;
+  box-shadow: 0 0 0 2px hsl(43 66% 52% / 0.2) !important;
+}
+
+.moyasar-form input::placeholder {
+  color: hsl(215 20% 45%) !important;
+  font-family: 'Tajawal', sans-serif !important;
+  letter-spacing: normal !important;
+}
+
+/* Style labels */
+.moyasar-form label {
+  color: hsl(215 20% 75%) !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+  margin-bottom: 6px !important;
+  display: block !important;
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* Form field wrapper (Moyasar) */
+.moyasar-form .mysr-field,
+.moyasar-form .mysr-form-group {
+  margin-bottom: 14px !important;
+  position: relative !important;
+}
+
+/* Style the submit button */
+.moyasar-form button[type="submit"],
+.moyasar-form .mysr-form__button,
+.moyasar-form .mysr-submit,
+.moyasar-form button[class*="submit"],
+.moyasar-form button[class*="pay"] {
+  background: linear-gradient(135deg, hsl(43 66% 52%), hsl(48 90% 58%)) !important;
+  color: hsl(222 47% 10%) !important;
+  border: none !important;
+  border-radius: 10px !important;
+  padding: 14px 20px !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  width: 100% !important;
+  margin-top: 16px !important;
+  transition: all 0.2s ease !important;
+  text-shadow: none !important;
+  font-family: 'Cairo', 'Tajawal', sans-serif !important;
+}
+
+.moyasar-form button[type="submit"]:hover {
+  filter: brightness(1.1) !important;
+  box-shadow: 0 4px 16px hsl(43 66% 52% / 0.4) !important;
+}
+
+.moyasar-form button[type="submit"]:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
+
+/* Apple Pay button styling */
+.moyasar-form .mysr-apple-pay,
+.moyasar-form .apple-pay-button,
+.moyasar-form [class*="apple-pay"] button,
+.moyasar-form [data-method="applepay"] button {
+  background: #000 !important;
+  border-radius: 10px !important;
+  height: 50px !important;
+  margin-bottom: 10px !important;
+  border: none !important;
+  cursor: pointer !important;
+  -webkit-appearance: -apple-pay-button !important;
+  -apple-pay-button-style: black !important;
+}
+
+/* STC Pay styling (keep brand look, but use HSL) */
+.moyasar-form .mysr-stc-pay,
+.moyasar-form [data-method="stcpay"] {
+  background: linear-gradient(135deg, hsl(282 67% 33%), hsl(289 65% 40%)) !important;
+  border-radius: 10px !important;
+  color: hsl(0 0% 100%) !important;
+}
+
+.moyasar-form [data-method="stcpay"] input {
+  background: hsl(222 30% 16%) !important;
+}
+
+/* Form row styling for expiry/cvv (Moyasar) */
+.moyasar-form .mysr-form-row,
+.moyasar-form .mysr-row {
+  display: flex !important;
+  gap: 12px !important;
+  margin-bottom: 14px !important;
+}
+
+.moyasar-form .mysr-form-row > *,
+.moyasar-form .mysr-row > * {
+  flex: 1 !important;
+  min-width: 0 !important;
+}
+
+/* Error messages */
+.moyasar-form .mysr-error,
+.moyasar-form [class*="error"] {
+  color: hsl(0 72% 55%) !important;
+  font-size: 12px !important;
+  margin-top: 4px !important;
+  text-align: right !important;
+  direction: rtl !important;
+}
+
+/* Valid state */
+.moyasar-form input.valid,
+.moyasar-form .mysr-field--valid input,
+.moyasar-form input[class*="valid"] {
+  border-color: hsl(142 71% 45%) !important;
+}
+
+/* Separator */
+.moyasar-form .mysr-separator,
+.moyasar-form [class*="separator"],
+.moyasar-form [class*="divider"] {
+  text-align: center !important;
+  color: hsl(215 20% 50%) !important;
+  margin: 12px 0 !important;
+  font-size: 12px !important;
+}
+
+/* Mobile responsive */
+@media (max-width: 640px) {
+  .moyasar-form [class*="tabs"] {
+    gap: 6px !important;
+  }
+
+  .moyasar-form [class*="tab"]:not([class*="tabs"]) {
+    min-width: 65px !important;
+    padding: 10px 6px !important;
+    font-size: 10px !important;
+  }
+
+  .moyasar-form .mysr-form-row,
+  .moyasar-form [class*="row"]:not([class*="form"]) {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+
+  .moyasar-form input {
+    font-size: 16px !important;
+    padding: 12px 10px !important;
+  }
+
+  .moyasar-form [class*="creditcard"],
+  .moyasar-form [class*="card-form"] {
+    padding: 12px !important;
+  }
+}

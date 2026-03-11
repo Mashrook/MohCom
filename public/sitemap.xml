@@ -1,0 +1,174 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+  
+  <!-- الصفحة الرئيسية -->
+  <url>
+    <loc>https://mohamie.com/</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>1.0</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/"/>
+  </url>
+  
+  <!-- عن المنصة -->
+  <url>
+    <loc>https://mohamie.com/about</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/about"/>
+  </url>
+  
+  <!-- الاشتراكات -->
+  <url>
+    <loc>https://mohamie.com/pricing</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/pricing"/>
+  </url>
+  
+  <!-- تواصل معنا -->
+  <url>
+    <loc>https://mohamie.com/contact</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/contact"/>
+  </url>
+  
+  <!-- الاستشارات القانونية -->
+  <url>
+    <loc>https://mohamie.com/consultation</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/consultation"/>
+  </url>
+  
+  <!-- التنبؤ بالأحكام -->
+  <url>
+    <loc>https://mohamie.com/predictions</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/predictions"/>
+  </url>
+  
+  <!-- الشكاوى -->
+  <url>
+    <loc>https://mohamie.com/complaints</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/complaints"/>
+  </url>
+  
+  <!-- العقود -->
+  <url>
+    <loc>https://mohamie.com/contracts</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/contracts"/>
+  </url>
+  
+  <!-- المحامين -->
+  <url>
+    <loc>https://mohamie.com/lawyers</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/lawyers"/>
+  </url>
+  
+  <!-- البحث القانوني -->
+  <url>
+    <loc>https://mohamie.com/legal-search</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/legal-search"/>
+  </url>
+  
+  <!-- سياسة الخصوصية -->
+  <url>
+    <loc>https://mohamie.com/privacy</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/privacy"/>
+  </url>
+  
+  <!-- شروط الاستخدام -->
+  <url>
+    <loc>https://mohamie.com/terms</loc>
+    <lastmod>2025-12-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.3</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/terms"/>
+  </url>
+  
+  <!-- سياسة الاسترجاع -->
+  <url>
+    <loc>https://mohamie.com/refund</loc>
+    <lastmod>2025-12-18</lastmod>
+    <changefreq>yearly</changefreq>
+    <priority>0.4</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/refund"/>
+  </url>
+  
+  <!-- الأسئلة الشائعة -->
+  <url>
+    <loc>https://mohamie.com/faq</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/faq"/>
+  </url>
+  
+  <!-- المدونة القانونية -->
+  <url>
+    <loc>https://mohamie.com/blog</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.9</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/blog"/>
+  </url>
+  
+  <!-- مقالات المدونة -->
+  <url>
+    <loc>https://mohamie.com/blog/labor-law-guide</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/blog/labor-law-guide"/>
+  </url>
+  
+  <url>
+    <loc>https://mohamie.com/blog/tenant-rights-guide</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/blog/tenant-rights-guide"/>
+  </url>
+  
+  <url>
+    <loc>https://mohamie.com/blog/company-registration-guide</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/blog/company-registration-guide"/>
+  </url>
+  
+  <!-- تسجيل الدخول -->
+  <url>
+    <loc>https://mohamie.com/auth</loc>
+    <lastmod>2025-12-16</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+    <xhtml:link rel="alternate" hreflang="ar" href="https://mohamie.com/auth"/>
+  </url>
+
+</urlset>
