@@ -1,11 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Shield, Lock, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2, Shield, Lock, AlertCircle, CreditCard, Smartphone } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { useMoyasarConfig } from "@/hooks/useMoyasarConfig";
 import { useMoyasarSdk } from "@/hooks/useMoyasarSdk";
+import { supabase } from "@/integrations/supabase/client";
 
 interface PlanInfo {
   id: string;
@@ -26,6 +30,8 @@ declare global {
     ApplePaySession?: any;
   }
 }
+
+  type PaymentMethod = "card" | "stcpay";
 
 function getHashRouteUrl(pathWithQuery: string) {
   const origin = window.location.origin;
@@ -51,6 +57,9 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
   const { data: cfg, error: cfgError, loading: cfgLoading } = useMoyasarConfig(isOpen);
   const { ready: sdkReady, error: sdkError } = useMoyasarSdk(isOpen && !!cfg?.publishableKey);
 
+  const [selectedMethod, setSelectedMethod] = useState<PaymentMethod>("card");
+  const [stcMobile, setStcMobile] = useState("");
+  const [stcLoading, setStcLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [initError, setInitError] = useState<string>("");
   const [initialized, setInitialized] = useState(false);
@@ -62,6 +71,24 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
     if (typeof window === "undefined") return false;
     return canUseApplePay();
   }, [isOpen]);
+
+  const cardMethods = useMemo(() => {
+    if (!cfg?.publishableKey) return [] as string[];
+
+    const isTestKey = cfg.publishableKey.startsWith("pk_test_");
+    if (isTestKey) return ["creditcard"];
+
+    const methods = ["creditcard"];
+    if (applePayAvailable && cfg.supportedMethods?.includes("applepay")) {
+      methods.push("applepay");
+    }
+
+    return methods;
+  }, [cfg?.publishableKey, cfg?.supportedMethods, applePayAvailable]);
+
+  const stcPayEnabled = useMemo(() => {
+    return cfg?.supportedMethods?.includes("stcpay") ?? false;
+  }, [cfg?.supportedMethods]);
 
   const friendlyError = useMemo(() => {
     const raw = initError || cfgError || sdkError;
@@ -81,10 +108,10 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
   }, [isOpen]);
 
   useEffect(() => {
-    if (!isOpen || !plan || !sdkReady || !cfg?.publishableKey || !window.Moyasar) return;
+    if (!isOpen || selectedMethod !== "card" || !plan || !sdkReady || !cfg?.publishableKey || !window.Moyasar) return;
 
     // IMPORTANT: include price in the init key so a price change forces a full re-init
-    const initKey = `${cfg.publishableKey}:${plan.id}:${plan.code}:${plan.price}:${user?.id ?? "anon"}`;
+    const initKey = `${cfg.publishableKey}:${plan.id}:${plan.code}:${plan.price}:${user?.id ?? "anon"}:${cardMethods.join(",")}`;
     if (lastInitKey.current === initKey && initialized) return;
 
     const el = document.getElementById(containerId.current);
@@ -96,10 +123,6 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
     const amountInHalala = Math.round(plan.price * 100);
     const callbackUrl = getHashRouteUrl(`/subscription-success?plan=${encodeURIComponent(plan.code)}`);
 
-    // NOTE: بعض طرق الدفع (مثل STC Pay / Apple Pay) قد لا تعمل في وضع الاختبار
-    const isTestKey = cfg.publishableKey.startsWith("pk_test_");
-    const methods = isTestKey ? ["creditcard"] : ["creditcard", "applepay", "stcpay"];
-
     try {
       window.Moyasar.init({
         element: `#${containerId.current}`,
@@ -108,8 +131,8 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
         description: `اشتراك ${plan.name} - محامي كوم`,
         publishable_api_key: cfg.publishableKey,
         callback_url: callbackUrl,
-        methods,
-        ...(methods.includes("applepay")
+        methods: cardMethods,
+        ...(cardMethods.includes("applepay")
           ? {
               apple_pay: {
                 country: "SA",
@@ -157,7 +180,82 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
     } catch (e) {
       setInitError(e instanceof Error ? e.message : String(e));
     }
-  }, [isOpen, plan, sdkReady, cfg?.publishableKey, user, toast, onClose, initialized]);
+  }, [isOpen, selectedMethod, plan, sdkReady, cfg?.publishableKey, user, toast, onClose, initialized, cardMethods]);
+
+  const handleStcPayCheckout = async () => {
+    if (!plan || !user) {
+      toast({
+        title: "تسجيل الدخول مطلوب",
+        description: "يجب تسجيل الدخول قبل إتمام الدفع.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const normalizedMobile = stcMobile.replace(/\s+/g, "");
+    if (!normalizedMobile) {
+      toast({
+        title: "رقم الجوال مطلوب",
+        description: "أدخل رقم الجوال المرتبط بمحفظة STC Pay.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setStcLoading(true);
+
+    try {
+      const { data: sessionData } = await supabase.auth.getSession();
+      const accessToken = sessionData.session?.access_token;
+      if (!accessToken) {
+        throw new Error("جلسة المستخدم غير متاحة");
+      }
+
+      const response = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/create-moyasar-checkout`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({
+          planCode: plan.code,
+          paymentMethod: "stcpay",
+          mobile: normalizedMobile,
+        }),
+      });
+
+      const payload = await response.json().catch(() => ({}));
+
+      if (!response.ok) {
+        throw new Error(payload?.error || `HTTP ${response.status}`);
+      }
+
+      if (payload?.status === "paid") {
+        const successUrl = getHashRouteUrl(
+          `/subscription-success?plan=${encodeURIComponent(plan.code)}&payment_id=${encodeURIComponent(
+            payload.paymentId || ""
+          )}&status=paid`
+        );
+        window.location.href = successUrl;
+        return;
+      }
+
+      if (!payload?.url) {
+        throw new Error("لم يتم استلام رابط الدفع من STC Pay");
+      }
+
+      window.location.href = payload.url;
+    } catch (error) {
+      toast({
+        title: "فشل تهيئة STC Pay",
+        description: error instanceof Error ? error.message : "تعذر بدء عملية الدفع.",
+        variant: "destructive",
+      });
+    } finally {
+      setStcLoading(false);
+    }
+  };
 
   useEffect(() => {
     if (!isOpen) {
@@ -165,6 +263,9 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
       setInitialized(false);
       setIsProcessing(false);
       setInitError("");
+      setSelectedMethod("card");
+      setStcMobile("");
+      setStcLoading(false);
     }
   }, [isOpen]);
 
@@ -217,53 +318,95 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
             </div>
           </div>
 
-          <div className="min-h-[280px] relative">
-            {friendlyError ? (
-              <div className="flex items-center justify-center h-[280px]">
-                <div className="text-center space-y-3 max-w-sm">
-                  <AlertCircle className="w-8 h-8 text-destructive mx-auto" />
-                  <p className="text-sm text-muted-foreground">{friendlyError}</p>
-                </div>
-              </div>
-            ) : cfgLoading || !cfg?.publishableKey ? (
-              <div className="flex items-center justify-center h-[280px]">
-                <div className="text-center space-y-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                  <p className="text-sm text-muted-foreground">جاري تحميل إعدادات الدفع...</p>
-                </div>
-              </div>
-            ) : !sdkReady ? (
-              <div className="flex items-center justify-center h-[280px]">
-                <div className="text-center space-y-3">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
-                  <p className="text-sm text-muted-foreground">جاري تحميل نظام الدفع...</p>
-                </div>
-              </div>
-            ) : (
-              <div>
-                {/* This only affects expectations; Moyasar itself decides what to show */}
-                {!applePayAvailable && (
-                  <p className="text-xs text-muted-foreground text-center mb-3">
-                    Apple Pay غير متاح على هذا الجهاز/الوضع، سيتم عرض طرق الدفع الأخرى.
-                  </p>
+          <Tabs value={selectedMethod} onValueChange={(value) => setSelectedMethod(value as PaymentMethod)} className="space-y-4">
+            <TabsList className="grid h-auto w-full grid-cols-2 border border-border/60 bg-muted/50 p-1">
+              <TabsTrigger value="card" className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground">
+                <CreditCard className="h-4 w-4" />
+                البطاقة
+              </TabsTrigger>
+              <TabsTrigger
+                value="stcpay"
+                disabled={!stcPayEnabled}
+                className="gap-2 data-[state=active]:bg-background data-[state=active]:text-foreground"
+              >
+                <Smartphone className="h-4 w-4" />
+                STC Pay
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="card" className="mt-0">
+              <div className="min-h-[280px] relative">
+                {friendlyError ? (
+                  <div className="flex items-center justify-center h-[280px]">
+                    <div className="text-center space-y-3 max-w-sm">
+                      <AlertCircle className="w-8 h-8 text-destructive mx-auto" />
+                      <p className="text-sm text-muted-foreground">{friendlyError}</p>
+                    </div>
+                  </div>
+                ) : cfgLoading || !cfg?.publishableKey ? (
+                  <div className="flex items-center justify-center h-[280px]">
+                    <div className="text-center space-y-3">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                      <p className="text-sm text-muted-foreground">جاري تحميل إعدادات الدفع...</p>
+                    </div>
+                  </div>
+                ) : !sdkReady ? (
+                  <div className="flex items-center justify-center h-[280px]">
+                    <div className="text-center space-y-3">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto" />
+                      <p className="text-sm text-muted-foreground">جاري تحميل نظام الدفع...</p>
+                    </div>
+                  </div>
+                ) : (
+                  <div>
+                    <p className="mb-3 text-xs text-muted-foreground text-center">
+                      سيتم عرض بطاقات مدى وVisa وMastercard هنا، ويظهر Apple Pay فقط داخل Safari وعلى النطاق الرسمي عند توفره.
+                    </p>
+
+                    <div
+                      id={containerId.current}
+                      className="moyasar-form min-h-[300px]"
+                    />
+                  </div>
                 )}
 
-                <div
-                  id={containerId.current}
-                  className="moyasar-form min-h-[300px]"
-                />
+                {isProcessing && (
+                  <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg z-50">
+                    <div className="text-center">
+                      <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
+                      <p className="text-sm text-muted-foreground">جاري معالجة الدفع...</p>
+                    </div>
+                  </div>
+                )}
               </div>
-            )}
+            </TabsContent>
 
-            {isProcessing && (
-              <div className="absolute inset-0 bg-background/80 flex items-center justify-center rounded-lg z-50">
-                <div className="text-center">
-                  <Loader2 className="w-8 h-8 animate-spin text-primary mx-auto mb-2" />
-                  <p className="text-sm text-muted-foreground">جاري معالجة الدفع...</p>
+            <TabsContent value="stcpay" className="mt-0">
+              <div className="space-y-4 rounded-xl border border-border/60 bg-card/70 p-4">
+                <Alert>
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    سيتم تحويلك إلى صفحة STC Pay لإكمال السداد ثم العودة تلقائياً إلى المنصة.
+                  </AlertDescription>
+                </Alert>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-foreground">رقم جوال STC Pay</label>
+                  <Input
+                    dir="ltr"
+                    inputMode="tel"
+                    placeholder="05XXXXXXXX أو 9665XXXXXXXX"
+                    value={stcMobile}
+                    onChange={(event) => setStcMobile(event.target.value)}
+                  />
                 </div>
+
+                <Button className="w-full bg-golden text-black hover:bg-golden/90" onClick={handleStcPayCheckout} disabled={stcLoading}>
+                  {stcLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : "المتابعة إلى STC Pay"}
+                </Button>
               </div>
-            )}
-          </div>
+            </TabsContent>
+          </Tabs>
 
           <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground bg-muted/30 rounded-lg py-3">
             <Lock className="w-4 h-4 text-green-500" />

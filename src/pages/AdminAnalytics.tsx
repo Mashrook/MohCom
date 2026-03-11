@@ -79,35 +79,55 @@ const AdminAnalytics = () => {
   const COLORS = ['#D4AF37', '#3B82F6', '#22C55E', '#EF4444'];
 
   const fetchAnalytics = async () => {
+    let successCount = 0;
+
     try {
-      // Fetch user roles for role distribution
-      const { data: roles, error: rolesError } = await supabase
-        .from("user_roles")
-        .select("role, user_id");
+      const [rolesResult, contractsResult, subscriptionsResult, presenceResult] = await Promise.allSettled([
+        supabase.from("user_roles").select("role, user_id"),
+        supabase.from("contract_analyses").select("*", { count: 'exact', head: true }),
+        supabase.from("subscriptions").select("status").eq("status", "active"),
+        supabase.from("user_presence").select("user_id, last_seen").eq("is_online", true),
+      ]);
 
-      if (rolesError) throw rolesError;
+      const roles = rolesResult.status === "fulfilled" && !rolesResult.value.error
+        ? (successCount++, rolesResult.value.data || [])
+        : [];
 
-      // Fetch contracts count
-      const { count: contractsCount, error: contractsError } = await supabase
-        .from("contract_analyses")
-        .select("*", { count: 'exact', head: true });
+      const contractsCount = contractsResult.status === "fulfilled" && !contractsResult.value.error
+        ? (successCount++, contractsResult.value.count || 0)
+        : 0;
 
-      if (contractsError) throw contractsError;
+      const subscriptions = subscriptionsResult.status === "fulfilled" && !subscriptionsResult.value.error
+        ? (successCount++, subscriptionsResult.value.data || [])
+        : [];
 
-      // Fetch active subscriptions
-      const { data: subscriptions, error: subsError } = await supabase
-        .from("subscriptions")
-        .select("status");
+      const onlinePresence = presenceResult.status === "fulfilled" && !presenceResult.value.error
+        ? (successCount++, presenceResult.value.data || [])
+        : [];
 
-      if (subsError) throw subsError;
+      if (rolesResult.status === "rejected") {
+        console.error("Failed to fetch user roles:", rolesResult.reason);
+      } else if (rolesResult.value.error) {
+        console.error("Failed to fetch user roles:", rolesResult.value.error);
+      }
 
-      // Fetch online users
-      const { data: onlinePresence, error: presenceError } = await supabase
-        .from("user_presence")
-        .select("user_id, last_seen")
-        .eq("is_online", true);
+      if (contractsResult.status === "rejected") {
+        console.error("Failed to fetch contracts analytics:", contractsResult.reason);
+      } else if (contractsResult.value.error) {
+        console.error("Failed to fetch contracts analytics:", contractsResult.value.error);
+      }
 
-      if (presenceError) throw presenceError;
+      if (subscriptionsResult.status === "rejected") {
+        console.error("Failed to fetch subscriptions analytics:", subscriptionsResult.reason);
+      } else if (subscriptionsResult.value.error) {
+        console.error("Failed to fetch subscriptions analytics:", subscriptionsResult.value.error);
+      }
+
+      if (presenceResult.status === "rejected") {
+        console.error("Failed to fetch user presence analytics:", presenceResult.reason);
+      } else if (presenceResult.value.error) {
+        console.error("Failed to fetch user presence analytics:", presenceResult.value.error);
+      }
 
       // Get profiles for online users
       const onlineUserIds = onlinePresence?.map(p => p.user_id) || [];
@@ -119,10 +139,22 @@ const AdminAnalytics = () => {
           .select("id, full_name")
           .in("id", onlineUserIds);
 
-        if (!profilesError && profiles) {
+        if (profilesError) {
+          console.error("Failed to fetch online user profiles:", profilesError);
+          onlineUsersData = onlineUserIds.map((userId) => {
+            const userRole = roles.find(r => r.user_id === userId);
+            const presence = onlinePresence.find(p => p.user_id === userId);
+            return {
+              user_id: userId,
+              full_name: null,
+              role: userRole?.role || 'client',
+              last_seen: presence?.last_seen || ''
+            };
+          });
+        } else if (profiles) {
           onlineUsersData = profiles.map(profile => {
-            const userRole = roles?.find(r => r.user_id === profile.id);
-            const presence = onlinePresence?.find(p => p.user_id === profile.id);
+            const userRole = roles.find(r => r.user_id === profile.id);
+            const presence = onlinePresence.find(p => p.user_id === profile.id);
             return {
               user_id: profile.id,
               full_name: profile.full_name,
@@ -135,23 +167,27 @@ const AdminAnalytics = () => {
 
       setOnlineUsersList(onlineUsersData);
 
-      const activeSubscriptions = subscriptions?.filter(s => s.status === 'active').length || 0;
+      const activeSubscriptions = subscriptions.length || 0;
 
       // Calculate role counts
-      const lawyers = roles?.filter(r => r.role === 'lawyer').length || 0;
-      const clients = roles?.filter(r => r.role === 'client').length || 0;
-      const admins = roles?.filter(r => r.role === 'admin').length || 0;
+      const lawyers = roles.filter(r => r.role === 'lawyer').length || 0;
+      const clients = roles.filter(r => r.role === 'client').length || 0;
+      const admins = roles.filter(r => r.role === 'admin').length || 0;
 
       setStats({
-        totalUsers: roles?.length || 0,
+        totalUsers: roles.length || 0,
         lawyers,
         clients,
         admins,
         totalContracts: contractsCount || 0,
         totalConsultations: 0,
         activeSubscriptions,
-        onlineUsers: onlinePresence?.length || 0,
+        onlineUsers: onlinePresence.length || 0,
       });
+
+      if (successCount === 0) {
+        throw new Error("No analytics queries succeeded");
+      }
     } catch (error) {
       console.error("Error fetching analytics:", error);
       toast({
@@ -408,7 +444,7 @@ const AdminAnalytics = () => {
                   {onlineUsersList.map((user) => (
                     <div
                       key={user.user_id}
-                      className="flex items-center gap-3 p-3 bg-navy-800/50 rounded-lg"
+                      className="flex items-center gap-3 rounded-lg border border-border/50 bg-card/70 p-3"
                     >
                       <div className="relative">
                         <div className="w-10 h-10 rounded-full bg-gradient-golden flex items-center justify-center text-navy-900 font-bold">

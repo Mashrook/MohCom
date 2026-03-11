@@ -20,6 +20,7 @@ import { PageTransition } from "@/components/PageTransition";
 import { TermsUpdateBanner } from "@/components/TermsUpdateBanner";
 import { DeepLinkHandler } from "@/components/DeepLinkHandler";
 import { PushNotificationManager } from "@/components/PushNotificationManager";
+import { LazyRouteErrorBoundary } from "@/components/LazyRouteErrorBoundary";
 
 // Lazy load pages
 const Index = lazy(() => import("@/pages/Index"));
@@ -227,9 +228,11 @@ const App = () => {
                     <DeepLinkHandler>
                       <PushNotificationManager />
                       <OfflineBanner />
-                      <Suspense fallback={<PageLoader />}>
-                        <AnimatedRoutes />
-                      </Suspense>
+                      <LazyRouteErrorBoundary>
+                        <Suspense fallback={<PageLoader />}>
+                          <AnimatedRoutes />
+                        </Suspense>
+                      </LazyRouteErrorBoundary>
                       <TermsUpdateBanner />
                       <SupportChat />
                     </DeepLinkHandler>

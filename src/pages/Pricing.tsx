@@ -4,7 +4,7 @@ import { Layout } from "@/components/layout/Layout";
 import { isIOSApp } from "@/utils/isIOSApp";
 import { SEO } from "@/components/SEO";
 import { Button } from "@/components/ui/button";
-import { Check, Sparkles, Loader2, AlertCircle, CreditCard, Building2, User, Crown } from "lucide-react";
+import { Check, Sparkles, Loader2, AlertCircle, CreditCard, Building2, User, Crown, Smartphone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
@@ -28,6 +28,10 @@ const PaymentMethodBadges = () => (
     <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
       <CreditCard className="w-5 h-5 text-primary" />
       <span className="text-xs font-medium">Visa / Mastercard</span>
+    </div>
+    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border">
+      <Smartphone className="w-5 h-5 text-emerald-500" />
+      <span className="text-xs font-medium">STC Pay</span>
     </div>
   </div>
 );

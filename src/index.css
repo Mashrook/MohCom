@@ -288,9 +288,7 @@
 
 /* Hide Moyasar test mode warning */
 .moyasar-form .mysr-form__warning,
-.moyasar-form .mysr-warning,
-.moyasar-form [class*="warning"],
-.moyasar-form [class*="test-mode"] {
+.moyasar-form .mysr-warning {
   display: none !important;
 }
 
@@ -355,9 +353,7 @@
 .moyasar-form .mysr-creditcard-form,
 .moyasar-form .mysr-form__creditcard,
 .moyasar-form [data-method="creditcard"],
-.moyasar-form .mysr-form-panel,
-.moyasar-form [class*="creditcard"],
-.moyasar-form [class*="card-form"] {
+.moyasar-form .mysr-form-panel {
   padding: 16px !important;
   background: hsl(222 30% 12%) !important;
   border-radius: 12px !important;
@@ -419,9 +415,7 @@
 /* Style the submit button */
 .moyasar-form button[type="submit"],
 .moyasar-form .mysr-form__button,
-.moyasar-form .mysr-submit,
-.moyasar-form button[class*="submit"],
-.moyasar-form button[class*="pay"] {
+.moyasar-form .mysr-submit {
   background: linear-gradient(135deg, hsl(43 66% 52%), hsl(48 90% 58%)) !important;
   color: hsl(222 47% 10%) !important;
   border: none !important;
@@ -489,8 +483,7 @@
 }
 
 /* Error messages */
-.moyasar-form .mysr-error,
-.moyasar-form [class*="error"] {
+.moyasar-form .mysr-error {
   color: hsl(0 72% 55%) !important;
   font-size: 12px !important;
   margin-top: 4px !important;
@@ -506,9 +499,7 @@
 }
 
 /* Separator */
-.moyasar-form .mysr-separator,
-.moyasar-form [class*="separator"],
-.moyasar-form [class*="divider"] {
+.moyasar-form .mysr-separator {
   text-align: center !important;
   color: hsl(215 20% 50%) !important;
   margin: 12px 0 !important;
@@ -517,18 +508,20 @@
 
 /* Mobile responsive */
 @media (max-width: 640px) {
-  .moyasar-form [class*="tabs"] {
+  .moyasar-form .mysr-form-tabs,
+  .moyasar-form .mysr-tabs {
     gap: 6px !important;
   }
 
-  .moyasar-form [class*="tab"]:not([class*="tabs"]) {
+  .moyasar-form .mysr-form-tabs__tab,
+  .moyasar-form .mysr-tab {
     min-width: 65px !important;
     padding: 10px 6px !important;
     font-size: 10px !important;
   }
 
   .moyasar-form .mysr-form-row,
-  .moyasar-form [class*="row"]:not([class*="form"]) {
+  .moyasar-form .mysr-row {
     flex-direction: column !important;
     gap: 10px !important;
   }
@@ -538,8 +531,8 @@
     padding: 12px 10px !important;
   }
 
-  .moyasar-form [class*="creditcard"],
-  .moyasar-form [class*="card-form"] {
+  .moyasar-form .mysr-creditcard-form,
+  .moyasar-form .mysr-form__creditcard {
     padding: 12px !important;
   }
 }
