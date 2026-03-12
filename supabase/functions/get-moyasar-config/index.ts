@@ -30,7 +30,7 @@ serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       publishableKey,
-      supportedMethods: ["creditcard", "applepay", "stcpay"],
+      supportedMethods: ["creditcard", "stcpay"],
       supportedNetworks: ["visa", "mastercard", "mada"],
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },

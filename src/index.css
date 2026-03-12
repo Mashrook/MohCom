@@ -309,9 +309,9 @@
   max-width: 110px !important;
   padding: 12px 8px !important;
   border-radius: 10px !important;
-  background: hsl(222 30% 16%) !important;
-  border: 1px solid hsl(222 30% 25%) !important;
-  color: hsl(0 0% 100%) !important;
+  background: hsl(var(--muted)) !important;
+  border: 1px solid hsl(var(--border)) !important;
+  color: hsl(var(--foreground)) !important;
   font-size: 12px !important;
   font-weight: 500 !important;
   cursor: pointer !important;
@@ -325,7 +325,7 @@
 
 .moyasar-form .mysr-form-tabs__tab:hover,
 .moyasar-form .mysr-tab:hover {
-  background: hsl(222 30% 20%) !important;
+  background: hsl(var(--accent)) !important;
   border-color: hsl(var(--primary)) !important;
 }
 
@@ -355,9 +355,9 @@
 .moyasar-form [data-method="creditcard"],
 .moyasar-form .mysr-form-panel {
   padding: 16px !important;
-  background: hsl(222 30% 12%) !important;
+  background: hsl(var(--card)) !important;
   border-radius: 12px !important;
-  border: 1px solid hsl(222 30% 20%) !important;
+  border: 1px solid hsl(var(--border)) !important;
   margin-top: 8px !important;
 }
 
@@ -367,10 +367,10 @@
 .moyasar-form input[type="text"],
 .moyasar-form input[type="tel"],
 .moyasar-form input[type="number"] {
-  background: hsl(222 30% 16%) !important;
-  border: 1px solid hsl(222 30% 25%) !important;
+  background: hsl(var(--input)) !important;
+  border: 1px solid hsl(var(--border)) !important;
   border-radius: 8px !important;
-  color: hsl(0 0% 100%) !important;
+  color: hsl(var(--foreground)) !important;
   padding: 14px 12px !important;
   font-size: 16px !important;
   width: 100% !important;
@@ -383,20 +383,20 @@
 }
 
 .moyasar-form input:focus {
-  border-color: hsl(43 66% 52%) !important;
+  border-color: hsl(var(--primary)) !important;
   outline: none !important;
-  box-shadow: 0 0 0 2px hsl(43 66% 52% / 0.2) !important;
+  box-shadow: 0 0 0 2px hsl(var(--primary) / 0.2) !important;
 }
 
 .moyasar-form input::placeholder {
-  color: hsl(215 20% 45%) !important;
+  color: hsl(var(--muted-foreground)) !important;
   font-family: 'Tajawal', sans-serif !important;
   letter-spacing: normal !important;
 }
 
 /* Style labels */
 .moyasar-form label {
-  color: hsl(215 20% 75%) !important;
+  color: hsl(var(--muted-foreground)) !important;
   font-size: 13px !important;
   font-weight: 500 !important;
   margin-bottom: 6px !important;
@@ -456,7 +456,7 @@
   -apple-pay-button-style: black !important;
 }
 
-/* STC Pay styling (keep brand look, but use HSL) */
+/* STC Pay styling */
 .moyasar-form .mysr-stc-pay,
 .moyasar-form [data-method="stcpay"] {
   background: linear-gradient(135deg, hsl(282 67% 33%), hsl(289 65% 40%)) !important;
@@ -465,7 +465,7 @@
 }
 
 .moyasar-form [data-method="stcpay"] input {
-  background: hsl(222 30% 16%) !important;
+  background: hsl(var(--input)) !important;
 }
 
 /* Form row styling for expiry/cvv (Moyasar) */
@@ -501,9 +501,17 @@
 /* Separator */
 .moyasar-form .mysr-separator {
   text-align: center !important;
-  color: hsl(215 20% 50%) !important;
+  color: hsl(var(--muted-foreground)) !important;
   margin: 12px 0 !important;
   font-size: 12px !important;
+}
+
+/* Ensure Moyasar iframes are visible */
+.moyasar-form iframe {
+  min-height: 40px !important;
+  width: 100% !important;
+  border: none !important;
+  display: block !important;
 }
 
 /* Mobile responsive */

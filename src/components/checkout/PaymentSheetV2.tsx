@@ -27,7 +27,6 @@ interface PaymentSheetV2Props {
 declare global {
   interface Window {
     Moyasar?: any;
-    ApplePaySession?: any;
   }
 }
 
@@ -37,17 +36,6 @@ function getHashRouteUrl(pathWithQuery: string) {
   const origin = window.location.origin;
   const cleaned = pathWithQuery.startsWith("/") ? pathWithQuery : `/${pathWithQuery}`;
   return `${origin}/#${cleaned}`;
-}
-
-function canUseApplePay() {
-  try {
-    const topLevel = window.top === window.self;
-    if (!topLevel) return false;
-    if (!window.ApplePaySession) return false;
-    return !!window.ApplePaySession.canMakePayments?.();
-  } catch {
-    return false;
-  }
 }
 
 export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
@@ -66,25 +54,6 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
 
   const containerId = useRef(`moyasar-${Math.random().toString(36).slice(2)}`);
   const lastInitKey = useRef<string | null>(null);
-
-  const applePayAvailable = useMemo(() => {
-    if (typeof window === "undefined") return false;
-    return canUseApplePay();
-  }, [isOpen]);
-
-  const cardMethods = useMemo(() => {
-    if (!cfg?.publishableKey) return [] as string[];
-
-    const isTestKey = cfg.publishableKey.startsWith("pk_test_");
-    if (isTestKey) return ["creditcard"];
-
-    const methods = ["creditcard"];
-    if (applePayAvailable && cfg.supportedMethods?.includes("applepay")) {
-      methods.push("applepay");
-    }
-
-    return methods;
-  }, [cfg?.publishableKey, cfg?.supportedMethods, applePayAvailable]);
 
   const stcPayEnabled = useMemo(() => {
     return cfg?.supportedMethods?.includes("stcpay") ?? false;
@@ -111,76 +80,77 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
     if (!isOpen || selectedMethod !== "card" || !plan || !sdkReady || !cfg?.publishableKey || !window.Moyasar) return;
 
     // IMPORTANT: include price in the init key so a price change forces a full re-init
-    const initKey = `${cfg.publishableKey}:${plan.id}:${plan.code}:${plan.price}:${user?.id ?? "anon"}:${cardMethods.join(",")}`;
+    const initKey = `${cfg.publishableKey}:${plan.id}:${plan.code}:${plan.price}:${user?.id ?? "anon"}`;
     if (lastInitKey.current === initKey && initialized) return;
 
-    const el = document.getElementById(containerId.current);
-    if (!el) return;
+    const initMoyasar = () => {
+      const el = document.getElementById(containerId.current);
+      if (!el) return;
 
-    // IMPORTANT: Full clear before re-init (Safari)
-    el.innerHTML = "";
+      // IMPORTANT: Full clear before re-init (Safari)
+      el.innerHTML = "";
 
-    const amountInHalala = Math.round(plan.price * 100);
-    const callbackUrl = getHashRouteUrl(`/subscription-success?plan=${encodeURIComponent(plan.code)}`);
+      const amountInHalala = Math.round(plan.price * 100);
+      const callbackUrl = getHashRouteUrl(`/subscription-success?plan=${encodeURIComponent(plan.code)}`);
 
-    try {
-      window.Moyasar.init({
-        element: `#${containerId.current}`,
-        amount: amountInHalala,
-        currency: "SAR",
-        description: `اشتراك ${plan.name} - محامي كوم`,
-        publishable_api_key: cfg.publishableKey,
-        callback_url: callbackUrl,
-        methods: cardMethods,
-        ...(cardMethods.includes("applepay")
-          ? {
-              apple_pay: {
-                country: "SA",
-                label: "محامي كوم",
-                validate_merchant_url: "https://api.moyasar.com/v1/applepay/initiate",
-              },
+      try {
+        window.Moyasar.init({
+          element: `#${containerId.current}`,
+          amount: amountInHalala,
+          currency: "SAR",
+          description: `اشتراك ${plan.name} - محامي كوم`,
+          publishable_api_key: cfg.publishableKey,
+          callback_url: callbackUrl,
+          methods: ["creditcard"],
+          metadata: {
+            user_id: user?.id || "",
+            plan_id: plan.id,
+            plan_code: plan.code,
+            user_email: user?.email || "",
+          },
+          on_initiating: () => {
+            setIsProcessing(true);
+          },
+          on_completed: (payment: any) => {
+            setIsProcessing(false);
+
+            if (payment?.status === "paid") {
+              toast({ title: "تم الدفع بنجاح!", description: "جاري تفعيل اشتراكك..." });
+              onClose();
+
+              const successUrl = getHashRouteUrl(
+                `/subscription-success?plan=${encodeURIComponent(plan.code)}&payment_id=${encodeURIComponent(
+                  payment.id
+                )}&status=paid`
+              );
+              window.location.href = successUrl;
             }
-          : {}),
-        metadata: {
-          user_id: user?.id || "",
-          plan_id: plan.id,
-          plan_code: plan.code,
-          user_email: user?.email || "",
-        },
-        on_initiating: () => {
-          setIsProcessing(true);
-        },
-        on_completed: (payment: any) => {
-          setIsProcessing(false);
+          },
+          on_failure: (error: any) => {
+            setIsProcessing(false);
+            toast({
+              title: "فشل الدفع",
+              description: error?.message || "حدث خطأ في عملية الدفع. يرجى المحاولة مرة أخرى.",
+              variant: "destructive",
+            });
+          },
+        });
 
-          if (payment?.status === "paid") {
-            toast({ title: "تم الدفع بنجاح!", description: "جاري تفعيل اشتراكك..." });
-            onClose();
+        lastInitKey.current = initKey;
+        setInitialized(true);
+      } catch (e) {
+        setInitError(e instanceof Error ? e.message : String(e));
+      }
+    };
 
-            const successUrl = getHashRouteUrl(
-              `/subscription-success?plan=${encodeURIComponent(plan.code)}&payment_id=${encodeURIComponent(
-                payment.id
-              )}&status=paid`
-            );
-            window.location.href = successUrl;
-          }
-        },
-        on_failure: (error: any) => {
-          setIsProcessing(false);
-          toast({
-            title: "فشل الدفع",
-            description: error?.message || "حدث خطأ في عملية الدفع. يرجى المحاولة مرة أخرى.",
-            variant: "destructive",
-          });
-        },
-      });
+    // Use requestAnimationFrame to ensure the container element is fully
+    // mounted in the DOM before calling Moyasar.init()
+    const rafId = requestAnimationFrame(() => {
+      initMoyasar();
+    });
 
-      lastInitKey.current = initKey;
-      setInitialized(true);
-    } catch (e) {
-      setInitError(e instanceof Error ? e.message : String(e));
-    }
-  }, [isOpen, selectedMethod, plan, sdkReady, cfg?.publishableKey, user, toast, onClose, initialized, cardMethods]);
+    return () => cancelAnimationFrame(rafId);
+  }, [isOpen, selectedMethod, plan, sdkReady, cfg?.publishableKey, user, toast, onClose, initialized]);
 
   const handleStcPayCheckout = async () => {
     if (!plan || !user) {
@@ -276,12 +246,11 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
   const priceBeforeVat = Math.round((plan.price - vatAmount) * 100) / 100;
   const isYearly = plan.code.includes("yearly");
 
-  const inPreviewOrIframe =
-    typeof window !== "undefined" && (window.top !== window.self || !window.location.hostname.endsWith("mohamie.com"));
+
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
-      <DialogContent className="sm:max-w-lg p-0 overflow-hidden" dir="rtl">
+      <DialogContent className="sm:max-w-lg p-0 overflow-y-auto" dir="rtl">
         <DialogHeader className="p-6 pb-4 bg-gradient-to-b from-primary/10 to-transparent">
           <DialogTitle className="text-center text-xl">الاشتراك في {plan.name}</DialogTitle>
         </DialogHeader>
@@ -291,15 +260,6 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
             <Alert variant="destructive">
               <AlertCircle className="h-4 w-4" />
               <AlertDescription>{friendlyError}</AlertDescription>
-            </Alert>
-          )}
-
-          {inPreviewOrIframe && (
-            <Alert>
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>
-                Apple Pay قد لا يظهر داخل المعاينة/الإطار، ويظهر فقط على النطاق الرسمي داخل Safari.
-              </AlertDescription>
             </Alert>
           )}
 
@@ -360,7 +320,7 @@ export function PaymentSheetV2({ isOpen, onClose, plan }: PaymentSheetV2Props) {
                 ) : (
                   <div>
                     <p className="mb-3 text-xs text-muted-foreground text-center">
-                      سيتم عرض بطاقات مدى وVisa وMastercard هنا، ويظهر Apple Pay فقط داخل Safari وعلى النطاق الرسمي عند توفره.
+                      أدخل بيانات بطاقتك (مدى، Visa، MasterCard) لإتمام الدفع
                     </p>
 
                     <div

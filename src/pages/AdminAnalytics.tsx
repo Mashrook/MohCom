@@ -65,6 +65,7 @@ const AdminAnalytics = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [onlineUsersList, setOnlineUsersList] = useState<OnlineUser[]>([]);
+  const [monthlyGrowth, setMonthlyGrowth] = useState<UserGrowth[]>([]);
   const [stats, setStats] = useState<Stats>({
     totalUsers: 0,
     lawyers: 0,
@@ -82,11 +83,12 @@ const AdminAnalytics = () => {
     let successCount = 0;
 
     try {
-      const [rolesResult, contractsResult, subscriptionsResult, presenceResult] = await Promise.allSettled([
+      const [rolesResult, contractsResult, subscriptionsResult, presenceResult, profilesGrowthResult] = await Promise.allSettled([
         supabase.from("user_roles").select("role, user_id"),
         supabase.from("contract_analyses").select("*", { count: 'exact', head: true }),
         supabase.from("subscriptions").select("status").eq("status", "active"),
         supabase.from("user_presence").select("user_id, last_seen").eq("is_online", true),
+        supabase.from("profiles").select("created_at"),
       ]);
 
       const roles = rolesResult.status === "fulfilled" && !rolesResult.value.error
@@ -103,6 +105,10 @@ const AdminAnalytics = () => {
 
       const onlinePresence = presenceResult.status === "fulfilled" && !presenceResult.value.error
         ? (successCount++, presenceResult.value.data || [])
+        : [];
+
+      const profileDates = profilesGrowthResult.status === "fulfilled" && !profilesGrowthResult.value.error
+        ? (successCount++, profilesGrowthResult.value.data || [])
         : [];
 
       if (rolesResult.status === "rejected") {
@@ -185,6 +191,19 @@ const AdminAnalytics = () => {
         onlineUsers: onlinePresence.length || 0,
       });
 
+      // Calculate real monthly user growth from profiles.created_at
+      const monthNames = ['يناير', 'فبراير', 'مارس', 'أبريل', 'مايو', 'يونيو',
+        'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسمبر'];
+      const now = new Date();
+      const growthData: UserGrowth[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const cutoff = new Date(d.getFullYear(), d.getMonth() + 1, 1).toISOString();
+        const count = profileDates.filter(p => p.created_at && p.created_at < cutoff).length;
+        growthData.push({ month: monthNames[d.getMonth()], users: count });
+      }
+      setMonthlyGrowth(growthData);
+
       if (successCount === 0) {
         throw new Error("No analytics queries succeeded");
       }
@@ -241,16 +260,6 @@ const AdminAnalytics = () => {
     { name: 'العملاء', value: stats.clients, color: '#22C55E' },
     { name: 'المحامين', value: stats.lawyers, color: '#3B82F6' },
     { name: 'المسؤولين', value: stats.admins, color: '#D4AF37' },
-  ];
-
-  // Sample monthly growth data (in production, this would come from the database)
-  const monthlyGrowth: UserGrowth[] = [
-    { month: 'يناير', users: Math.floor(stats.totalUsers * 0.3) },
-    { month: 'فبراير', users: Math.floor(stats.totalUsers * 0.4) },
-    { month: 'مارس', users: Math.floor(stats.totalUsers * 0.5) },
-    { month: 'أبريل', users: Math.floor(stats.totalUsers * 0.6) },
-    { month: 'مايو', users: Math.floor(stats.totalUsers * 0.75) },
-    { month: 'يونيو', users: stats.totalUsers },
   ];
 
   // Service usage data
